@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from igraph import *
+from igraph import Graph
+
+limiar=1
+cidade='rio'
 
 #this function generate a Matrix with the shortest paths between the nodes
 #this matrix help us to know a lot of indices, for example
@@ -8,7 +11,7 @@ def matrizMenorCaminho(g, valor):
     nova=[]
     valor=valor+1
     for elemento in range(valor):
-        nova.append([0]*valor)
+        nova.append([valor]*valor)
     for i in range(valor):
         lista=[]
         menores=g.get_all_shortest_paths(i)
@@ -17,20 +20,21 @@ def matrizMenorCaminho(g, valor):
     return nova
 
 def eficienciaGlobal(g, matriz):
-    return calculosEficiencia(matriz, g)
+    return calculosEficiencia(matriz, g, g)
 
-def calculosEficiencia(matriz, g):
+def calculosEficiencia(matriz, y, g):
     i=0
     x=0.0
     while i<len(matriz):
         j=0
         while j<len(matriz[i]):
-            if matriz[i][j]!=0 and i<=j:
+            if matriz[i][j]!=0:
                 x+=1.0/matriz[i][j]
+
             j+=1
         i+=1
     n=g.vcount()
-    return x/(n*(n-1))
+    return x/((n)*(n-1))
 
 #this function generate another Graph equals the basic one to delete the node in
 #question to make some calculations to discover how eficient is the node
@@ -40,26 +44,7 @@ def eficienciaVertice(g, n, matriz):
     gr.add_vertices(g.vcount()-1)
     gr.add_edges(g.get_edgelist())
     gr.delete_vertices(n)
-    return calculosEficiencia(matriz, g)
-
-#this function makes exactly what the previous one but where the nodes do not
-#connect the value 0 is replaced by a value not possible. one more the number of
-#nodes
-def eficienciaVerticeComMax(g, n):
-    gr = Graph()
-    gr.add_vertices(g.vcount()-1)
-    gr.add_edges(g.get_edgelist())
-    gr.delete_vertices(n)
-    matriz = matrizMenorCaminho(gr, g.vcount())
-    i=0
-    while i<len(matriz):
-        j=0
-        while j<len(matriz[i]):
-            if matriz[i][j]==0:
-                matriz[i][j]=g.vcount()
-            j+=1
-        i+=1
-    return calculosEficiencia(matriz, g)
+    return calculosEficiencia(matrizMenorCaminho(gr, gr.vcount()-1), gr, g)
 
 #this function make the vulnerability calculation with the node efficiency and
 #the global efficiency
@@ -107,7 +92,7 @@ def straightness(mShort, mEucl, g):
     return lista
 
 
-#### Base functions ####
+############################ Base functions ####################################
 
 def strtoint(x):
     lista = []
@@ -142,7 +127,7 @@ def arquivoParaOd(arquivo):
         valor=(len(m))
     return (valores, valor)
 
-### Limiar Matriz ###
+############################### Limiar Matriz ###################################
 
 def gerarMatrizLimiar(limiar, cidade):
 
@@ -188,10 +173,8 @@ def gerarMatrizLimiar(limiar, cidade):
     print('Matriz com limiar '+str(limiar)+' gerada')
 
 
-###### main #######
+########################################## main ###################################
 
-limiar=1
-cidade='sjc'
 
 if cidade=='sjc':
 
@@ -211,7 +194,16 @@ if cidade=='rio':
 
     arquivo = open('rio/matrizes/MatrizLimiar'+str(limiar)+'.txt','r')
     fileGlobais = open('rio/valoresGrafo/valoresRioLimiar'+str(limiar)+'.txt', 'w')
-    filleNo = open('rio/valoresGrafo/ValoresPorVerticeRioLimiar'+str(limiar)+'.txt', 'w')
+    fileNo = open('rio/valoresGrafo/ValoresPorVerticeRioLimiar'+str(limiar)+'.txt', 'w')
+
+
+if cidade=='pipaVovo':
+
+    arquivoEucl = open('pipaVovo/euclidiana_pipavovo.txt','r')
+
+    arquivo = open('pipaVovo/matrizpipavovo.txt','r')
+    fileGlobais = open('pipaVovo/valoresPipaLimiar'+str(limiar)+'.txt', 'w')
+    fileNo = open('pipaVovo/ValoresPorVerticePipaLimiar'+str(limiar)+'.txt', 'w')
 
 
 
@@ -246,6 +238,7 @@ g = Graph()
 g.add_vertices(valor)
 g.add_edges(strtoint(valores))
 
+
 mShort=matrizMenorCaminho(g, valor)
 mEucl=matrizEucli
 
@@ -277,7 +270,6 @@ stra=straightness(mShort, mEucl, g)
 t='no eficiencia vulnerabilidade straightness\n'
 while i<n:
     t+=(str(i))
-    
     t+=(' '+ str(eficienciaVertice(g, i, mShort)))
     t+=(' ' + str(vulnerabilidade(eficienciaVertice(g, i, mShort), efg)))
     t+=(' '+ str(stra[i][1]))
