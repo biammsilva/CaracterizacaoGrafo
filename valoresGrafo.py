@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 from igraph import Graph
 
-limiar=1
-cidade='rio'
-
 #this function generate a Matrix with the shortest paths between the nodes
 #this matrix help us to know a lot of indices, for example
 #vulnerability, global efficiency, straightness centrality
 def matrizMenorCaminho(g, valor):
     nova=[]
     valor=valor+1
-    for elemento in range(valor):
-        nova.append([valor]*valor)
     for i in range(valor):
         lista=[]
-        menores=g.get_all_shortest_paths(i)
-        for linha in range(len(menores)):
-            nova[menores[linha][0]][menores[linha][-1]]=len(menores[linha])-1
+        menores=g.shortest_paths(i)
+        nova.append(menores[0])
     return nova
+
+def menorCaminhoMedio(x, g):
+    lista=g.shortest_paths(x)
+    y=float((sum(lista[0])))/(len(lista[0])-1)
+    return y
 
 def eficienciaGlobal(g, matriz):
     return calculosEficiencia(matriz, g, g)
@@ -30,8 +29,8 @@ def calculosEficiencia(matriz, y, g):
         while j<len(matriz[i]):
             if matriz[i][j]!=0:
                 x+=1.0/matriz[i][j]
-
             j+=1
+        
         i+=1
     n=g.vcount()
     return x/((n)*(n-1))
@@ -72,7 +71,7 @@ def straightness(mShort, mEucl, g):
         while j<n:
             #quando mShort é igual a zero, ou i é igual a j
             #ou é um ponto que não se conecta com o i
-            if mShort[i][j]!=0:
+            if i!=j and mShort[i][j]!=0: 
                 soma+=(mEucl[i][j]/mShort[i][j])
                 #conta a quantidade de nós que i é conectado
                 cont+=1
@@ -85,7 +84,7 @@ def straightness(mShort, mEucl, g):
         if cont==0:
             total=-1
         else:
-            div=1/(float(cont))
+            div=1/(float(cont)-1)
             total=div*soma
         lista.append((i, total))
         i+=1
@@ -175,107 +174,117 @@ def gerarMatrizLimiar(limiar, cidade):
 
 ########################################## main ###################################
 
+def gerarDados(cidade, limiar):
+    if cidade=='sjc':
 
-if cidade=='sjc':
+        gerarMatrizLimiar(limiar, cidade)
+        
+        arquivoEucl = open('sjc/matrizes/euclidianaCentroidesSJC.txt','r')
 
-    gerarMatrizLimiar(limiar, cidade)
-    
-    arquivoEucl = open('sjc/matrizes/euclidianaCentroidesSJC.txt','r')
+        arquivo = open('sjc/matrizes/MatrizLimiar'+str(limiar)+'.txt','r')
+        fileGlobais = open('sjc/valoresGrafo/valoresSjcLimiar'+str(limiar)+'.txt', 'w')
+        fileNo = open('sjc/valoresGrafo/ValoresPorVerticeSjcLimiar'+str(limiar)+'.txt', 'w')
 
-    arquivo = open('sjc/matrizes/MatrizLimiar'+str(limiar)+'.txt','r')
-    fileGlobais = open('sjc/valoresGrafo/valoresSjcLimiar'+str(limiar)+'.txt', 'w')
-    fileNo = open('sjc/valoresGrafo/ValoresPorVerticeSjcLimiar'+str(limiar)+'.txt', 'w')
+    if cidade=='rio':
 
-if cidade=='rio':
+        gerarMatrizLimiar(limiar, cidade)
 
-    gerarMatrizLimiar(limiar, cidade)
+        arquivoEucl = open('rio/matrizes/matrizEuclidianaRJ.txt','r')
 
-    arquivoEucl = open('rio/matrizes/matrizEuclidianaRJ.txt','r')
-
-    arquivo = open('rio/matrizes/MatrizLimiar'+str(limiar)+'.txt','r')
-    fileGlobais = open('rio/valoresGrafo/valoresRioLimiar'+str(limiar)+'.txt', 'w')
-    fileNo = open('rio/valoresGrafo/ValoresPorVerticeRioLimiar'+str(limiar)+'.txt', 'w')
-
-
-if cidade=='pipaVovo':
-
-    arquivoEucl = open('pipaVovo/euclidiana_pipavovo.txt','r')
-
-    arquivo = open('pipaVovo/matrizpipavovo.txt','r')
-    fileGlobais = open('pipaVovo/valoresPipaLimiar'+str(limiar)+'.txt', 'w')
-    fileNo = open('pipaVovo/ValoresPorVerticePipaLimiar'+str(limiar)+'.txt', 'w')
+        arquivo = open('rio/matrizes/MatrizLimiar'+str(limiar)+'.txt','r')
+        fileGlobais = open('rio/valoresGrafo/valoresRioLimiar'+str(limiar)+'.txt', 'w')
+        fileNo = open('rio/valoresGrafo/ValoresPorVerticeRioLimiar'+str(limiar)+'.txt', 'w')
 
 
+    if cidade=='pipaVovo':
 
-res = arquivoParaOd(arquivo)
-valores=res[0]
-valor=res[1]-1
+        arquivoEucl = open('pipaVovo/euclidiana_pipavovo.txt','r')
 
-
-ls=[]
-lista=[]
-m=[]
+        arquivo = open('pipaVovo/matrizpipavovo.txt','r')
+        fileGlobais = open('pipaVovo/valoresPipaLimiar'+str(limiar)+'.txt', 'w')
+        fileNo = open('pipaVovo/ValoresPorVerticePipaLimiar'+str(limiar)+'.txt', 'w')
 
 
 
-m = []
-for l in arquivoEucl:
-    x=l.replace('\n', '').split(' ')
-    m.append(x[:-1])
+    res = arquivoParaOd(arquivo)
+    valores=res[0]
+    valor=res[1]-1
 
-matrizEucli=[]
-for el in m:
+
+    ls=[]
     lista=[]
-    for e in el:
-        lista.append(float(e))
-    matrizEucli.append(lista)
+    m=[]
 
 
-arquivo.close()
-arquivoEucl.close()
 
-g = Graph()
-g.add_vertices(valor)
-g.add_edges(strtoint(valores))
+    m = []
+    for l in arquivoEucl:
+        x=l.replace('\n', '').split(' ')
+        m.append(x[:-1])
 
-
-mShort=matrizMenorCaminho(g, valor)
-mEucl=matrizEucli
-
-
-s='Nos Arestas Diametro GrauMedio MenorCaminho EficienciaGlobal\n'
-
-s+=(str(len(g.degree())))
-
-s+=(' '+str(len(g.get_edgelist())))
-
-s+=(' '+str(g.diameter()))
-
-s+=(' '+str(mediaGraus(g.degree())))
-
-s+=(' '+str(g.average_path_length()))
-
-efg=eficienciaGlobal(g, mShort)
-s+=(' '+str(efg))
+    matrizEucli=[]
+    for el in m:
+        lista=[]
+        for e in el:
+            lista.append(float(e))
+        matrizEucli.append(lista)
 
 
-fileGlobais.write(s)
-fileGlobais.close()
-print('Arquivo com caracterização global gerado')
+    arquivo.close()
+    arquivoEucl.close()
 
-i=0
-n=len(g.degree())
+    g = Graph()
+    g.add_vertices(valor)
+    g.add_edges(strtoint(valores))
 
-stra=straightness(mShort, mEucl, g)
-t='no eficiencia vulnerabilidade straightness\n'
-while i<n:
-    t+=(str(i))
-    t+=(' '+ str(eficienciaVertice(g, i, mShort)))
-    t+=(' ' + str(vulnerabilidade(eficienciaVertice(g, i, mShort), efg)))
-    t+=(' '+ str(stra[i][1]))
-    t+='\n'
-    i+=1
 
-fileNo.write(t)
-fileNo.close()
-print('Arquivo com caracterização por vértice gerado')
+    mShort=matrizMenorCaminho(g, valor)
+    mEucl=matrizEucli
+
+
+    s='Nos Arestas Diametro GrauMedio MenorCaminho EficienciaGlobal\n'
+
+    s+=(str(len(g.degree())))
+
+    s+=(' '+str(len(g.get_edgelist())))
+
+    s+=(' '+str(g.diameter()))
+
+    s+=(' '+str(mediaGraus(g.degree())))
+
+    s+=(' '+str(g.average_path_length()))
+
+    efg=eficienciaGlobal(g, mShort)
+    s+=(' '+str(efg))
+
+
+    fileGlobais.write(s)
+    fileGlobais.close()
+    print('Arquivo com caracterização global gerado')
+
+    i=0
+    n=len(g.degree())
+
+    stra=straightness(mShort, mEucl, g)
+    t='no grau aglomeracao minimoCaminho eficiencia vulnerabilidade straightness\n'
+    while i<n:
+        t+=(str(i))
+        print i
+        t+=(' '+str(g.degree(i)))
+        t+=(' '+str(g.transitivity_local_undirected(i)))
+        t+=(' '+str(menorCaminhoMedio(i,g)))
+        t+=(' '+ str(eficienciaVertice(g, i, mShort)))
+        t+=(' ' + str(vulnerabilidade(eficienciaVertice(g, i, mShort), efg)))
+        t+=(' '+ str(stra[i][1]))
+        t+='\n'
+        i+=1
+
+    fileNo.write(t)
+    fileNo.close()
+    
+    print('Arquivo com caracterização por vértice gerado')
+
+#gerarDados('rio',1)
+#gerarDados('rio',58)
+gerarDados('rio',4646)
+#gerarDados('rio',5000)
