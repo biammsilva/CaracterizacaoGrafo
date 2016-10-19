@@ -242,21 +242,16 @@ def gerarDados(cidade, limiar):
     mEucl=matrizEucli
 
 
-    s='Nos Arestas Diametro GrauMedio MenorCaminho EficienciaGlobal\n'
+    s='Nos Arestas Diametro GrauMedio MenorCaminho EficienciaGlobal Aglomeracao\n'
 
     s+=(str(len(g.degree())))
-
     s+=(' '+str(len(g.get_edgelist())))
-
     s+=(' '+str(g.diameter()))
-
     s+=(' '+str(mediaGraus(g.degree())))
-
     s+=(' '+str(g.average_path_length()))
-
     efg=eficienciaGlobal(g, mShort)
     s+=(' '+str(efg))
-
+    s+=(' '+str(g.transitivity_undirected()))
 
     fileGlobais.write(s)
     fileGlobais.close()
@@ -270,7 +265,7 @@ def gerarDados(cidade, limiar):
     while i<n:
         t+=(str(i))
         print i
-        t+=(' '+str(g.degree(i)))
+        t+=(' '+str(g.degree(i)/2))
         t+=(' '+str(g.transitivity_local_undirected(i)))
         t+=(' '+str(menorCaminhoMedio(i,g)))
         t+=(' '+ str(eficienciaVertice(g, i, mShort)))
@@ -286,5 +281,9 @@ def gerarDados(cidade, limiar):
 
 #gerarDados('rio',1)
 #gerarDados('rio',58)
-gerarDados('rio',4646)
+#gerarDados('rio',4646)
 #gerarDados('rio',5000)
+#gerarDados('pipaVovo',1)
+#gerarDados('sjc',100)
+#gerarDados('sjc',1000)
+gerarDados('pipaVovo',1)
