@@ -15,8 +15,7 @@ def matrizMenorCaminho(g, valor):
 
 def menorCaminhoMedio(x, g):
     lista=g.shortest_paths(x)
-    y=float((sum(lista[0])))/(len(lista[0])-1)
-    return y
+    return float(sum(lista[0]))/(len(lista[0])-1)
 
 def eficienciaGlobal(g, matriz):
     return calculosEficiencia(matriz, g, g)
@@ -90,6 +89,10 @@ def straightness(mShort, mEucl, g):
         i+=1
     return lista
 
+def coeficienteAglomeracao(i, g):
+    if g.degree(i)/2==1:
+        return 0
+    return g.transitivity_local_undirected(i)
 
 ############################ Base functions ####################################
 
@@ -170,6 +173,7 @@ def gerarMatrizLimiar(limiar, cidade):
     od.write(t)
     od.close()
     print('Matriz com limiar '+str(limiar)+' gerada')
+
 
 
 ########################################## main ###################################
@@ -266,7 +270,7 @@ def gerarDados(cidade, limiar):
         t+=(str(i))
         print i
         t+=(' '+str(g.degree(i)/2))
-        t+=(' '+str(g.transitivity_local_undirected(i)))
+        t+=(' '+str(coeficienteAglomeracao(i, g)))
         t+=(' '+str(menorCaminhoMedio(i,g)))
         t+=(' '+ str(eficienciaVertice(g, i, mShort)))
         t+=(' ' + str(vulnerabilidade(eficienciaVertice(g, i, mShort), efg)))
